@@ -1,0 +1,17 @@
+{
+  "uuid": "fa3b1b87-bd01-4751-ab6b-903eef732cef",
+  "shortName": "PIC",
+  "longName": "Notorious PIC",
+  "companyName": "Sean Freiburg Inc",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
