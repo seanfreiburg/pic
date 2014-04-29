@@ -1,83 +1,55 @@
-function iconFromWeatherId(weatherId) {
-  if (weatherId < 600) {
-    return 2;
-  } else if (weatherId < 700) {
-    return 3;
-  } else if (weatherId > 800) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
+var initialized = false;
 
-function fetchWeather(latitude, longitude) {
-  var response;
-  var req = new XMLHttpRequest();
-  req.open('GET', "http://api.openweathermap.org/data/2.1/find/city?" +
-    "lat=" + latitude + "&lon=" + longitude + "&cnt=1", true);
-  req.onload = function(e) {
-    if (req.readyState == 4) {
-      if(req.status == 200) {
-        console.log(req.responseText);
-        response = JSON.parse(req.responseText);
-        var temperature, icon, city;
-        if (response && response.list && response.list.length > 0) {
-          var weatherResult = response.list[0];
-          temperature = Math.round(weatherResult.main.temp - 273.15);
-          icon = iconFromWeatherId(weatherResult.weather[0].id);
-          city = weatherResult.name;
-          console.log(temperature);
-          console.log(icon);
-          console.log(city);
-          Pebble.sendAppMessage({
-            "icon":icon,
-            "temperature":temperature + "\u00B0C",
-            "city":city});
+Pebble.addEventListener("ready", function() {
+  console.log("ready called!");
+  initialized = true;
+});
+
+Pebble.addEventListener("showConfiguration", function() {
+  var saveOptions = JSON.parse(window.localStorage.getItem("options"));
+  
+  var url = "http://niraj.com/pebble/polar_clock_config.php?v=1.0";
+
+  if(saveOptions != null) {
+    url += "&time=" + (saveOptions["polarclock0"] ? encodeURIComponent(saveOptions["polarclock0"]) : "") + 
+           "&date=" + (saveOptions["polarclock1"] ? encodeURIComponent(saveOptions["polarclock1"]) : "") +
+       "&rowd=" + (saveOptions["polarclock2"] ? encodeURIComponent(saveOptions["polarclock2"]) : "") +
+       "&invt=" + (saveOptions["polarclock3"] ? encodeURIComponent(saveOptions["polarclock3"]) : "") +
+       "&four=" + (saveOptions["polarclock4"] ? encodeURIComponent(saveOptions["polarclock4"]) : "");
+  }
+
+  console.log("Showing configuration: " + url);
+  Pebble.openURL(url);
+});
+
+Pebble.addEventListener("webviewclosed", function(e) {
+  console.log("configuration closed");
+  // webview closed
+  if(e.response && e.response.length>5) {
+      var options = JSON.parse(decodeURIComponent(e.response));
+      
+      console.log("Options = " + JSON.stringify(options));
+    
+      var saveOptions = {
+        "polarclock0": options["0"],
+        "polarclock1": options["1"],
+        "polarclock2": options["2"],
+        "polarclock3": options["3"],
+        "polarclock4": options["4"]
+      };
+    
+      window.localStorage.setItem("options", JSON.stringify(saveOptions));
+    
+      Pebble.sendAppMessage(options,
+        function(e) {
+          console.log("Successfully sent options to Pebble");
+        },
+        function(e) {
+          console.log("Failed to send options to Pebble.\nError: " + e.error.message);
         }
-
-      } else {
-        console.log("Error");
-      }
-    }
+      );
+  } else {
+    
+    console.log("Error with JS Config options received.");  
   }
-  req.send(null);
-}
-
-function locationSuccess(pos) {
-  var coordinates = pos.coords;
-  fetchWeather(coordinates.latitude, coordinates.longitude);
-}
-
-function locationError(err) {
-  console.warn('location error (' + err.code + '): ' + err.message);
-  Pebble.sendAppMessage({
-    "city":"Loc Unavailable",
-    "temperature":"N/A"
-  });
-}
-
-var locationOptions = { "timeout": 15000, "maximumAge": 60000 };
-
-
-Pebble.addEventListener("ready",
-                        function(e) {
-                          console.log("connect!" + e.ready);
-                          locationWatcher = window.navigator.geolocation.watchPosition(locationSuccess, locationError, locationOptions);
-                          console.log(e.type);
-                        });
-
-Pebble.addEventListener("appmessage",
-                        function(e) {
-                          window.navigator.geolocation.getCurrentPosition(locationSuccess, locationError, locationOptions);
-                          console.log(e.type);
-                          console.log(e.payload.temperature);
-                          console.log("message!");
-                        });
-
-Pebble.addEventListener("webviewclosed",
-                                     function(e) {
-                                     console.log("webview closed");
-                                     console.log(e.type);
-                                     console.log(e.response);
-                                     });
-
+});

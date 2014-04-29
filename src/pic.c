@@ -7,7 +7,7 @@ static GBitmap *icon_bitmap = NULL;
 //144x168
 
 static uint32_t WEATHER_ICONS[] = {
-  RESOURCE_ID_IMAGE_SUN
+  RESOURCE_ID_IMAGE_CLOCK
 };
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {

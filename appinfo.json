@@ -4,6 +4,9 @@
   "longName": "Notorious PIC",
   "companyName": "Sean Freiburg Inc",
   "versionCode": 1,
+  "capabilities": [
+        "configurable"
+    ],
   "versionLabel": "1.0.0",
   "watchapp": {
     "watchface": false
@@ -15,8 +18,8 @@
     "media": [
       {
         "type": "png",
-        "name": "IMAGE_SUN",
-        "file": "img/sun.png"
+        "name": "IMAGE_CLOCK",
+        "file": "img/clock.png"
       }
     ]
   }
