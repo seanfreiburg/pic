@@ -1,7 +1,7 @@
 #include <pebble.h>
 
 static Window *window;
-static BitmapLayer *icon_layer;
+static RotBitmapLayer *icon_layer;
 static GBitmap *icon_bitmap = NULL;
 static Layer *draw_layer;
 //144x168
@@ -166,6 +166,8 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   position = (position + 1) %12;
+  rot_bitmap_layer_increment_angle(icon_layer, 50000);
+  layer_mark_dirty((Layer*)icon_layer);
   layer_mark_dirty(draw_layer);
 }
 
@@ -184,16 +186,21 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
 
 
-  icon_layer = bitmap_layer_create(bounds);
-  layer_add_child(window_layer, bitmap_layer_get_layer(icon_layer));
+
+
   icon_bitmap = gbitmap_create_with_resource(WEATHER_ICONS[0]);
-  bitmap_layer_set_bitmap(icon_layer, icon_bitmap);
-  /*
-  text_layer = text_layer_create((GRect) { .origin = { 0, 72 }, .size = { bounds.size.w, 20 } });
-  text_layer_set_text(text_layer, "Press a button");
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(text_layer));
-  */
+  icon_layer = rot_bitmap_layer_create(icon_bitmap);
+  GRect bounds_b = layer_get_bounds((Layer*)icon_layer);
+  const GPoint center = grect_center_point(&bounds_b);
+  GRect image_frame = (GRect) { .origin = center, .size = bounds_b.size };
+  image_frame.origin.x -= bounds_b.size.w/2+38; //rotlayer does something odd with positioning, and this is the only way I could correct it
+  image_frame.origin.y -= bounds_b.size.h/2+26;
+  layer_set_frame((Layer*)icon_layer,image_frame);
+  rot_bitmap_set_compositing_mode(icon_layer, GCompOpAssign); // use whatever mode you need to
+  bitmap_layer_set_background_color((BitmapLayer *) icon_layer, GColorBlack );   
+  layer_add_child(window_layer, (Layer*)icon_layer);
+
+
   draw_layer = layer_create(bounds);
   layer_add_child(window_layer, draw_layer);
   layer_set_update_proc(draw_layer, draw_layer_draw);
@@ -201,7 +208,7 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
   //text_layer_destroy(text_layer);
-  bitmap_layer_destroy(icon_layer);
+  bitmap_layer_destroy((BitmapLayer*)icon_layer);
 
 }
 
