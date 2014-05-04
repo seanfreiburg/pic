@@ -5,7 +5,8 @@
   "companyName": "Sean Freiburg Inc",
   "versionCode": 1,
   "capabilities": [
-        
+     "location",
+     "configurable"   
     ],
   "versionLabel": "1.0.0",
   "watchapp": {
