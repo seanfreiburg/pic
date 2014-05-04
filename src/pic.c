@@ -16,96 +16,84 @@ static uint32_t WEATHER_ICONS[] = {
 };
 
 
-static void draw_one(Layer *layer, GContext *ctx) {
-  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2); 
-  for (int i = SCREEN_WIDTH/2; i <= 3*SCREEN_WIDTH/4; i++){
+static void draw_up(Layer *layer, GContext *ctx, int start,int end){
+  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
+    for (int i = start; i <= end; i++){
     graphics_draw_line(ctx,GPoint(i,0),center);
    }
-   
+
+}
+
+static void draw_down(Layer *layer, GContext *ctx, int start,int end){
+  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
+  for (int i = start; i <= end; i++){
+    graphics_draw_line(ctx,GPoint(i,SCREEN_HEIGHT),center);
+   }
+}
+
+static void draw_left(Layer *layer, GContext *ctx, int start,int end){
+  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
+  for (int i = start; i <= end; i++){
+    graphics_draw_line(ctx,GPoint(0,i),center);
+   }
+}
+
+static void draw_right(Layer *layer, GContext *ctx, int start,int end){
+  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
+   for (int i = start; i <= end; i++){
+    graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,i),center);
+   }
+}
+
+
+static void draw_one(Layer *layer, GContext *ctx) {
+  draw_up(layer,ctx,SCREEN_WIDTH/2, 3*SCREEN_WIDTH/4);
 }
 
 static void draw_two(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);  
-  for (int i = 3*SCREEN_WIDTH/4; i <= SCREEN_WIDTH; i++){
-    graphics_draw_line(ctx,GPoint(i,0),center);
-   }  
 
-   for (int i = 0; i <= SCREEN_HEIGHT/4; i++){
-    graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,i),center);
-   }
-
+  draw_up(layer,ctx,3*SCREEN_WIDTH/4, SCREEN_WIDTH);
+  draw_right(layer,ctx,0, SCREEN_HEIGHT/4);
 }
 
 static void draw_three(Layer *layer, GContext *ctx) {
-  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);  
-   for (int i = SCREEN_HEIGHT/4; i <= SCREEN_HEIGHT/2; i++){
-    graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,i),center);
-   }
+  draw_right(layer,ctx, SCREEN_HEIGHT/4, SCREEN_HEIGHT/2);
 }
 
 static void draw_four(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = SCREEN_HEIGHT/2; i <= 3*SCREEN_HEIGHT/4; i++){
-    graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,i),center);
-   }
+  draw_right(layer,ctx, SCREEN_HEIGHT/2, 3*SCREEN_HEIGHT/4);
 }
 
 static void draw_five(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = 3*SCREEN_HEIGHT/4; i <= SCREEN_HEIGHT; i++){
-    graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,i),center);
-   }
-   for (int i = SCREEN_WIDTH; i >= 3*SCREEN_WIDTH/4; i--){
-    graphics_draw_line(ctx,GPoint(i,SCREEN_HEIGHT),center);
-   }
+  draw_right(layer,ctx, 3*SCREEN_HEIGHT/4, SCREEN_HEIGHT);
+  draw_down(layer,ctx, 3*SCREEN_WIDTH/4, SCREEN_WIDTH);
 }
 
 static void draw_six(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = 3*SCREEN_WIDTH/4; i >= SCREEN_WIDTH/2; i--){
-    graphics_draw_line(ctx,GPoint(i,SCREEN_HEIGHT),center);
-   }
+  draw_down(layer,ctx,SCREEN_WIDTH/2, 3*SCREEN_WIDTH/4);
 }
 
 static void draw_seven(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = SCREEN_WIDTH/2; i >= SCREEN_WIDTH/4; i--){
-    graphics_draw_line(ctx,GPoint(i,SCREEN_HEIGHT),center);
-   }
+  draw_down(layer,ctx,SCREEN_WIDTH/4, SCREEN_WIDTH/2);
 }
 
 static void draw_eight(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = 3*SCREEN_WIDTH/4; i >= 0; i--){
-    graphics_draw_line(ctx,GPoint(i,SCREEN_HEIGHT),center);
-   }
-   for (int i = SCREEN_HEIGHT; i >= 3*SCREEN_HEIGHT/4; i--){
-    graphics_draw_line(ctx,GPoint(0,i),center);
-   }
+  draw_down(layer,ctx,0, SCREEN_WIDTH/4);
+  draw_left(layer,ctx,3*SCREEN_HEIGHT/4, SCREEN_HEIGHT);
 }
 
 static void draw_nine(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = 3*SCREEN_HEIGHT/4; i >= SCREEN_HEIGHT/2; i--){
-    graphics_draw_line(ctx,GPoint(0,i),center);
-   }
+  draw_left(layer,ctx,SCREEN_HEIGHT/2,3*SCREEN_HEIGHT/4);
 }
 
 static void draw_ten(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-   for (int i = SCREEN_HEIGHT/2; i >= SCREEN_HEIGHT/4; i--){
-    graphics_draw_line(ctx,GPoint(0,i),center);
-   }
+  draw_left(layer,ctx,SCREEN_HEIGHT/4,SCREEN_HEIGHT/2);
 }
 
 static void draw_eleven(Layer *layer, GContext *ctx) {
-GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
-  for (int i = SCREEN_HEIGHT/4; i >= 0; i--){
-    graphics_draw_line(ctx,GPoint(0,i),center);
-   }
-   for (int i = 0; i <= SCREEN_WIDTH/4; i++){
-    graphics_draw_line(ctx,GPoint(i,0),center);
-   }
+  draw_left(layer,ctx,0,SCREEN_HEIGHT/4);
+  draw_up(layer,ctx,0,SCREEN_WIDTH/4);
+
 }
 
 static void draw_layer_draw(Layer *layer, GContext *ctx) {
@@ -115,7 +103,8 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
    // 11 is full
    //GRect bounds = layer_get_bounds(layer);
    //GPoint start = GPoint(SCREEN_WIDTH /2,0);
-    graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+    //graphics_context_set_stroke_color(ctx, GColorBlack);
    if (position >= 1 ){
       draw_one(layer,ctx);
    }
@@ -197,7 +186,7 @@ static void window_load(Window *window) {
   image_frame.origin.y -= bounds_b.size.h/2+26;
   layer_set_frame((Layer*)icon_layer,image_frame);
   rot_bitmap_set_compositing_mode(icon_layer, GCompOpAssign); // use whatever mode you need to
-  bitmap_layer_set_background_color((BitmapLayer *) icon_layer, GColorBlack );   
+  bitmap_layer_set_background_color((BitmapLayer *) icon_layer, GColorBlack );
   layer_add_child(window_layer, (Layer*)icon_layer);
 
 
