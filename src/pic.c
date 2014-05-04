@@ -7,13 +7,65 @@ static Layer *draw_layer;
 //144x168
 #define SCREEN_WIDTH 144
 #define SCREEN_HEIGHT 168
+#define PARTITIONS 12
+
 
 int position = 0;
+int current_side = 0;
+int current_pixel = 0;
+int start_side = 0;
+int start_pixel = 0;
 
 
 static uint32_t WEATHER_ICONS[] = {
   RESOURCE_ID_IMAGE_CLOCK
 };
+
+static void draw_section(Layer *layer, GContext *ctx){
+  GPoint center = GPoint(SCREEN_WIDTH /2, SCREEN_HEIGHT /2);
+  int perimeter = (SCREEN_HEIGHT*2) + (SCREEN_WIDTH*2);
+  int pixels =  (perimeter)/PARTITIONS;
+  for (int i =0; i < pixels; i++){
+    if (current_side == 0 && current_pixel == SCREEN_WIDTH){
+        i--;
+        current_side = 1;
+        current_pixel = 0;
+    }
+    else if (current_side == 1 && current_pixel == SCREEN_HEIGHT){
+        i--;
+        current_side = 2;
+        current_pixel = SCREEN_WIDTH;
+    }
+    else if (current_side == 2 && current_pixel == 0){
+        i--;
+        current_side = 3;
+        current_pixel = SCREEN_HEIGHT;
+    }
+    else if (current_side == 3 && current_pixel == 0){
+        i--;
+        current_side = 0;
+        current_pixel = 0;
+    }
+
+    else if (current_side == 0){
+      graphics_draw_line(ctx,GPoint(current_pixel,0),center);
+      current_pixel++;
+    }
+    else if (current_side == 1){
+      graphics_draw_line(ctx,GPoint(SCREEN_WIDTH,current_pixel),center);
+      current_pixel++;
+    }
+    else if (current_side == 2){
+      graphics_draw_line(ctx,GPoint(current_pixel,SCREEN_HEIGHT),center);
+      current_pixel--;
+    }
+    else if (current_side == 3){
+      graphics_draw_line(ctx,GPoint(0,current_pixel),center);
+      current_pixel--;
+    }
+
+  }
+}
 
 
 static void draw_up(Layer *layer, GContext *ctx, int start,int end){
@@ -105,6 +157,8 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
    //GPoint start = GPoint(SCREEN_WIDTH /2,0);
   graphics_context_set_stroke_color(ctx, GColorWhite);
     //graphics_context_set_stroke_color(ctx, GColorBlack);
+  draw_section(layer,ctx);
+  /*
    if (position >= 1 ){
       draw_one(layer,ctx);
    }
@@ -139,7 +193,7 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
     draw_eleven(layer,ctx);
    }
 
-
+   */
 
 
 }
