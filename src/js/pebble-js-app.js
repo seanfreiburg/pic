@@ -14,7 +14,8 @@ var rotation_angle = 0 ;
 function sendMessage() {
   console.log(rotation_angle);
   console.log(seconds);
-  Pebble.sendAppMessage({"angle": rotation_angle, "seconds": seconds});
+  console.log(seconds.toString());
+  Pebble.sendAppMessage({"angle": rotation_angle, "seconds":seconds.toString()});
 
   // PRO TIP: If you are sending more than one message, or a complex set of messages,
   // it is important that you setup an ackHandler and a nackHandler and call

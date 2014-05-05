@@ -26,10 +26,10 @@ int current_side = 0;
 int current_pixel = 0;
 int start_side = 0;
 int start_pixel = 0;
-int init_seconds = 0;
+static char init_seconds[10] = "";
 int init_angle = 0;
 int text_layer_showing = 0;
-
+char buf[15];
 
 static uint32_t CLOCK_ICONS[] = {
   RESOURCE_ID_IMAGE_CLOCK
@@ -132,7 +132,12 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     text_layer_showing = 0;
   }
   else{
-   text_layer_set_text(text_layer, "Penis");
+
+   strcpy(buf, init_seconds);
+   strcat(buf, " Seconds");
+   text_layer_set_text(text_layer, buf );
+   APP_LOG(APP_LOG_LEVEL_DEBUG, "Buf: ");
+   APP_LOG(APP_LOG_LEVEL_DEBUG, "%s", buf);
    text_layer_showing = 1;
   }
 
@@ -164,9 +169,11 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     }
   }
   if (seconds_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Seconds: %d",seconds_tuple->value->uint8 );
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Seconds: %s",seconds_tuple->value->cstring );
+
+    strncpy(init_seconds, seconds_tuple->value->cstring, 10);
     if (init_tuple){
-      init_seconds = seconds_tuple->value->uint8;
+
     }
     else {
 
