@@ -10,7 +10,8 @@ static uint8_t sync_buffer[64];
 
 
 enum ClockKey {
-  ANGLE_KEY = 0x0 // TUPLE_INT
+  ANGLE_KEY = 0x0, // TUPLE_INT
+  SECONDS_KEY = 0x1
 };
 
 //144x168
@@ -39,9 +40,13 @@ static void sync_error_callback(DictionaryResult dict_error, AppMessageResult ap
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
   switch (key) {
     case ANGLE_KEY:
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "ANGLE_KEY");
       // App Sync keeps new_tuple in sync_buffer, so we may use it directly
       rot_bitmap_layer_increment_angle(icon_layer, (new_tuple->value->uint8)*ANGLE_MULTIPLIER);
       layer_mark_dirty((Layer*)icon_layer);
+      break;
+    case SECONDS_KEY:
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "SECONDS_KEY");
       break;
   }
 }
@@ -141,63 +146,8 @@ static void draw_right(Layer *layer, GContext *ctx, int start,int end){
 }
 
 
-static void draw_one(Layer *layer, GContext *ctx) {
-  draw_up(layer,ctx,SCREEN_WIDTH/2, 3*SCREEN_WIDTH/4);
-}
-
-static void draw_two(Layer *layer, GContext *ctx) {
-
-  draw_up(layer,ctx,3*SCREEN_WIDTH/4, SCREEN_WIDTH);
-  draw_right(layer,ctx,0, SCREEN_HEIGHT/4);
-}
-
-static void draw_three(Layer *layer, GContext *ctx) {
-  draw_right(layer,ctx, SCREEN_HEIGHT/4, SCREEN_HEIGHT/2);
-}
-
-static void draw_four(Layer *layer, GContext *ctx) {
-  draw_right(layer,ctx, SCREEN_HEIGHT/2, 3*SCREEN_HEIGHT/4);
-}
-
-static void draw_five(Layer *layer, GContext *ctx) {
-  draw_right(layer,ctx, 3*SCREEN_HEIGHT/4, SCREEN_HEIGHT);
-  draw_down(layer,ctx, 3*SCREEN_WIDTH/4, SCREEN_WIDTH);
-}
-
-static void draw_six(Layer *layer, GContext *ctx) {
-  draw_down(layer,ctx,SCREEN_WIDTH/2, 3*SCREEN_WIDTH/4);
-}
-
-static void draw_seven(Layer *layer, GContext *ctx) {
-  draw_down(layer,ctx,SCREEN_WIDTH/4, SCREEN_WIDTH/2);
-}
-
-static void draw_eight(Layer *layer, GContext *ctx) {
-  draw_down(layer,ctx,0, SCREEN_WIDTH/4);
-  draw_left(layer,ctx,3*SCREEN_HEIGHT/4, SCREEN_HEIGHT);
-}
-
-static void draw_nine(Layer *layer, GContext *ctx) {
-  draw_left(layer,ctx,SCREEN_HEIGHT/2,3*SCREEN_HEIGHT/4);
-}
-
-static void draw_ten(Layer *layer, GContext *ctx) {
-  draw_left(layer,ctx,SCREEN_HEIGHT/4,SCREEN_HEIGHT/2);
-}
-
-static void draw_eleven(Layer *layer, GContext *ctx) {
-  draw_left(layer,ctx,0,SCREEN_HEIGHT/4);
-  draw_up(layer,ctx,0,SCREEN_WIDTH/4);
-
-}
-
 static void draw_layer_draw(Layer *layer, GContext *ctx) {
 
-   // position can be between 0 and 11
-   // 0 is empty
-   // 11 is full
-   //GRect bounds = layer_get_bounds(layer);
-   //GPoint start = GPoint(SCREEN_WIDTH /2,0);
   //graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_stroke_color(ctx, GColorBlack);
   current_side = 0;
@@ -205,48 +155,7 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
   for (int i =0; i < position; i++){
     draw_section(layer,ctx);  
   }
-  
-  /*
-   if (position >= 1 ){
-      draw_one(layer,ctx);
-   }
-   if (position >= 2 ){
-      draw_two(layer,ctx);
-   }
-   if (position >= 3 ){
-      draw_three(layer,ctx);
-   }
-   if (position >= 4 ){
-    draw_four(layer,ctx);
-   }
-   if (position >= 5 ){
-    draw_five(layer,ctx);
-   }
-   if (position >= 6 ){
-    draw_six(layer,ctx);
-   }
-   if (position >= 7 ){
-    draw_seven(layer,ctx);
-   }
-   if (position >= 8 ){
-    draw_eight(layer,ctx);
-   }
-   if (position >= 9 ){
-    draw_nine(layer,ctx);
-   }
-   if (position >= 10 ){
-    draw_ten(layer,ctx);
-   }
-   if (position >= 11 ){
-    draw_eleven(layer,ctx);
-   }
-
-   */
-
-
 }
-
-
 
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -297,7 +206,8 @@ static void window_load(Window *window) {
   layer_set_update_proc(draw_layer, draw_layer_draw);
 
     Tuplet initial_values[] = {
-    TupletInteger(ANGLE_KEY, (uint8_t) 0),
+    TupletInteger(ANGLE_KEY, (uint8_t) 90),
+    TupletInteger(SECONDS_KEY, (uint8_t) 0)
   };
 
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
