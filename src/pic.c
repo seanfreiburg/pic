@@ -5,13 +5,12 @@ static RotBitmapLayer *icon_layer;
 static GBitmap *icon_bitmap = NULL;
 static Layer *draw_layer;
 
-static AppSync sync;
-static uint8_t sync_buffer[64];
 
 
 enum ClockKey {
-  ANGLE_KEY = 0x0, // TUPLE_INT
-  SECONDS_KEY = 0x1
+  INIT_KEY = 0x0,
+  ANGLE_KEY = 0x1, // TUPLE_INT
+  SECONDS_KEY = 0x2
 };
 
 //144x168
@@ -26,47 +25,14 @@ int current_side = 0;
 int current_pixel = 0;
 int start_side = 0;
 int start_pixel = 0;
+int init_seconds = 0;
+int init_angle = 0;
 
 
 static uint32_t CLOCK_ICONS[] = {
   RESOURCE_ID_IMAGE_CLOCK
 };
 
-
-static void sync_error_callback(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Sync Error: %d", app_message_error);
-}
-
-static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
-  switch (key) {
-    case ANGLE_KEY:
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "ANGLE_KEY");
-      // App Sync keeps new_tuple in sync_buffer, so we may use it directly
-      rot_bitmap_layer_increment_angle(icon_layer, (new_tuple->value->uint8)*ANGLE_MULTIPLIER);
-      layer_mark_dirty((Layer*)icon_layer);
-      break;
-    case SECONDS_KEY:
-      APP_LOG(APP_LOG_LEVEL_DEBUG, "SECONDS_KEY");
-      break;
-  }
-}
-
-
-static void send_cmd(void) {
-  Tuplet value = TupletInteger(1, 1);
-
-  DictionaryIterator *iter;
-  app_message_outbox_begin(&iter);
-
-  if (iter == NULL) {
-    return;
-  }
-
-  dict_write_tuplet(iter, &value);
-  dict_write_end(iter);
-
-  app_message_outbox_send();
-}
 
 
 static void draw_section(Layer *layer, GContext *ctx){
@@ -153,7 +119,7 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
   current_side = 0;
   current_pixel = 0;
   for (int i =0; i < position; i++){
-    draw_section(layer,ctx);  
+    draw_section(layer,ctx);
   }
 }
 
@@ -175,6 +141,49 @@ static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   //text_layer_set_text(text_layer, "Down");
 }
 
+
+static void in_received_handler(DictionaryIterator *iter, void *context) {
+  Tuple *init_tuple = dict_find(iter, INIT_KEY);
+  Tuple *angle_tuple = dict_find(iter, ANGLE_KEY);
+  Tuple *seconds_tuple = dict_find(iter, SECONDS_KEY);
+
+  if (angle_tuple) {
+    rot_bitmap_layer_increment_angle(icon_layer, (angle_tuple->value->uint8)*182);
+    layer_mark_dirty((Layer*)icon_layer);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Angle: %d",angle_tuple->value->uint8 );
+    if (init_tuple){
+      init_angle = angle_tuple->value->uint8;
+    }
+  }
+  if (seconds_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Seconds: %d",seconds_tuple->value->uint8 );
+    if (init_tuple){
+      init_seconds = seconds_tuple->value->uint8;
+    }
+    else {
+
+    }
+  }
+}
+
+static void in_dropped_handler(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Dropped!");
+}
+
+static void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Failed to Send!");
+ }
+
+
+static void app_message_init(void) {
+  // Register message handlers
+  app_message_register_inbox_received(in_received_handler);
+  app_message_register_inbox_dropped(in_dropped_handler);
+  app_message_register_outbox_failed(out_failed_handler);
+  // Init buffers
+  app_message_open(64, 64);
+}
+
 static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
@@ -184,9 +193,6 @@ static void click_config_provider(void *context) {
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-
-
-
 
   icon_bitmap = gbitmap_create_with_resource(CLOCK_ICONS[0]);
   icon_layer = rot_bitmap_layer_create(icon_bitmap);
@@ -205,18 +211,9 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, draw_layer);
   layer_set_update_proc(draw_layer, draw_layer_draw);
 
-    Tuplet initial_values[] = {
-    TupletInteger(ANGLE_KEY, (uint8_t) 90),
-    TupletInteger(SECONDS_KEY, (uint8_t) 0)
-  };
-
-  app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values),
-      sync_tuple_changed_callback, sync_error_callback, NULL);
 }
 
 static void window_unload(Window *window) {
-  //text_layer_destroy(text_layer);
-  app_sync_deinit(&sync);
   bitmap_layer_destroy((BitmapLayer*)icon_layer);
   layer_destroy(draw_layer);
 
@@ -224,6 +221,7 @@ static void window_unload(Window *window) {
 
 static void init(void) {
   window = window_create();
+
 
   window_set_click_config_provider(window, click_config_provider);
   window_set_window_handlers(window, (WindowHandlers) {
@@ -233,6 +231,8 @@ static void init(void) {
   const bool animated = true;
   window_set_fullscreen(window, true);
   window_stack_push(window, animated);
+
+  app_message_init();
 }
 
 static void deinit(void) {

@@ -6,14 +6,16 @@
   "versionCode": 1,
   "capabilities": [
      "location",
-     "configurable"   
+     "configurable"
     ],
   "versionLabel": "1.0.0",
   "watchapp": {
     "watchface": false
   },
-  "appKeys": {
-    "dummy": 0
+    "appKeys": {
+    "init": 0,
+    "angle": 1,
+    "seconds": 2
   },
   "resources": {
     "media": [
