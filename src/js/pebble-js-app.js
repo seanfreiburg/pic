@@ -15,25 +15,25 @@ function sendMessage() {
   console.log(rotation_angle);
   console.log(seconds);
   Pebble.sendAppMessage({"angle": rotation_angle, "seconds": seconds});
-  
-  // PRO TIP: If you are sending more than one message, or a complex set of messages, 
-  // it is important that you setup an ackHandler and a nackHandler and call 
-  // Pebble.sendAppMessage({ /* Message here */ }, ackHandler, nackHandler), which 
-  // will designate the ackHandler and nackHandler that will be called upon the Pebble 
-  // ack-ing or nack-ing the message you just sent. The specified nackHandler will 
+
+  // PRO TIP: If you are sending more than one message, or a complex set of messages,
+  // it is important that you setup an ackHandler and a nackHandler and call
+  // Pebble.sendAppMessage({ /* Message here */ }, ackHandler, nackHandler), which
+  // will designate the ackHandler and nackHandler that will be called upon the Pebble
+  // ack-ing or nack-ing the message you just sent. The specified nackHandler will
   // also be called if your message send attempt times out.
 }
 
 
-                        
+
 // Called when incoming message from the Pebble is received
 var request_info = function() {
                 //console.log("Received Status: " + e.payload.status);
   var url = 'http://people.lis.illinois.edu/~csevans2/evenstone2/GetRoute.php?tokenid='+Pebble.getAccountToken();
   var req = new XMLHttpRequest();
-  
+
   console.log(url) ;
-                
+
   req.open('GET', url, true);
   req.onload = function() {
     console.log(req);
@@ -53,13 +53,13 @@ var request_info = function() {
         var respmsg = result.ResponseMsg ;
         // console.log(result) ;
         console.log("RespCode: " + respcode + "\tRespMsg:" + respmsg) ;
-        console.log("Origin: " + origin + "\nDestination: " + destination + "\nTravMode: " + travmode + "\nEventTime: " + eventhr + ":" + eventmin + " " + eventampm + "\nBitmapRotation:" + rotation_angle) ;       
+        console.log("Origin: " + origin + "\nDestination: " + destination + "\nTravMode: " + travmode + "\nEventTime: " + eventhr + ":" + eventmin + " " + eventampm + "\nBitmapRotation:" + rotation_angle) ;
        // Pebble.sendAppMessage({ "icon":icon, "temperature":temperature + "\u00B0C"});
         console.log("Time to " + travmode + "\n\tbetween " + origin + "\n\tand " + destination + "\n\tis " + getDurationInSecs(origin, destination) + "secs") ;
       } else { console.log("Error"); }
     }
   } ;
-  req.send(null);                
+  req.send(null);
   //sendMessage(rotation_angle);
   };
 
@@ -69,12 +69,13 @@ Pebble.addEventListener("showConfiguration", function() {
   Pebble.openURL(url);
   console.log("blah");
   request_info();
+
 });
 
 
 
 
-function getDurationInSecs(start, end) { //,success_callback) { 
+function getDurationInSecs(start, end) { //,success_callback) {
   var xmlHttp = null;
   xmlHttp = new XMLHttpRequest();
   var url = "https://maps.googleapis.com/maps/api/directions/json?key=AIzaSyBvbZUMkNxFl5lvHp7U8763z8WsWtmD1Kw&origin="+start+"&destination="+end+"&mode="+travmode+"&sensor=false";
@@ -89,7 +90,7 @@ function getDurationInSecs(start, end) { //,success_callback) {
   if (xmlHttp.readyState==4 && xmlHttp.status==200)
   {
       var result = JSON.parse(xmlHttp.responseText) ;
-      console.log(result) ; 
+      console.log(result) ;
       seconds = JSON.parse(xmlHttp.responseText)['routes'][0]['legs'][0]['duration']['value'] ;
       console.log(seconds) ;
       sendMessage();

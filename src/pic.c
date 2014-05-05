@@ -4,6 +4,7 @@ static Window *window;
 static RotBitmapLayer *icon_layer;
 static GBitmap *icon_bitmap = NULL;
 static Layer *draw_layer;
+static TextLayer *text_layer;
 
 
 
@@ -27,6 +28,7 @@ int start_side = 0;
 int start_pixel = 0;
 int init_seconds = 0;
 int init_angle = 0;
+int text_layer_showing = 0;
 
 
 static uint32_t CLOCK_ICONS[] = {
@@ -125,8 +127,14 @@ static void draw_layer_draw(Layer *layer, GContext *ctx) {
 
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //text_layer_set_text(text_layer, "Penis");
-
+  if (text_layer_showing){
+    text_layer_set_text(text_layer, "");
+    text_layer_showing = 0;
+  }
+  else{
+   text_layer_set_text(text_layer, "Penis");
+   text_layer_showing = 1;
+  }
 
 }
 
@@ -210,6 +218,12 @@ static void window_load(Window *window) {
   draw_layer = layer_create(bounds);
   layer_add_child(window_layer, draw_layer);
   layer_set_update_proc(draw_layer, draw_layer_draw);
+
+  text_layer = text_layer_create((GRect) { .origin = { 33, 72 }, .size = { 80, 20 } });
+  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
+  text_layer_set_text_color( text_layer,GColorWhite);
+  text_layer_set_background_color( text_layer,GColorBlack);
+  layer_add_child(window_layer, text_layer_get_layer(text_layer));
 
 }
 
