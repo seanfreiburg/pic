@@ -1,6 +1,3 @@
-
-
-console.log("RAHHHH");
 var origin = '';
 var destination = '' ;
 var travmode = 'WALKING' ;
@@ -11,11 +8,17 @@ var seconds = 0 ;
 var rotation_angle = 0 ;
 
 // Function to send a message to the Pebble using AppMessage API
-function sendMessage() {
+function sendMessage(init) {
   console.log(rotation_angle);
-  console.log(seconds);
-  console.log(seconds.toString());
-  Pebble.sendAppMessage({"angle": rotation_angle, "seconds":seconds.toString()});
+  console.log("Seconds " +seconds);
+  if (init){
+    console.log("init!!!!!!!!!")
+    Pebble.sendAppMessage({"angle": rotation_angle, "seconds":seconds, "init": true});
+  }
+  else{
+   Pebble.sendAppMessage({"angle": rotation_angle, "seconds":seconds});
+  }
+
 
   // PRO TIP: If you are sending more than one message, or a complex set of messages,
   // it is important that you setup an ackHandler and a nackHandler and call
@@ -28,7 +31,7 @@ function sendMessage() {
 
 
 // Called when incoming message from the Pebble is received
-var request_info = function() {
+var request_info = function(init) {
                 //console.log("Received Status: " + e.payload.status);
   var url = 'http://people.lis.illinois.edu/~csevans2/evenstone2/GetRoute.php?tokenid='+Pebble.getAccountToken();
   var req = new XMLHttpRequest();
@@ -56,7 +59,7 @@ var request_info = function() {
         console.log("RespCode: " + respcode + "\tRespMsg:" + respmsg) ;
         console.log("Origin: " + origin + "\nDestination: " + destination + "\nTravMode: " + travmode + "\nEventTime: " + eventhr + ":" + eventmin + " " + eventampm + "\nBitmapRotation:" + rotation_angle) ;
        // Pebble.sendAppMessage({ "icon":icon, "temperature":temperature + "\u00B0C"});
-        console.log("Time to " + travmode + "\n\tbetween " + origin + "\n\tand " + destination + "\n\tis " + getDurationInSecs(origin, destination) + "secs") ;
+        console.log("Time to " + travmode + "\n\tbetween " + origin + "\n\tand " + destination + "\n\tis " + getDurationInSecs(origin, destination,init) + "secs") ;
       } else { console.log("Error"); }
     }
   } ;
@@ -69,14 +72,14 @@ Pebble.addEventListener("showConfiguration", function() {
   console.log("showing configuration at " + url);
   Pebble.openURL(url);
   console.log("blah");
-  request_info();
+  request_info(true);
 
 });
 
 
 
 
-function getDurationInSecs(start, end) { //,success_callback) {
+function getDurationInSecs(start, end, init) { //,success_callback) {
   var xmlHttp = null;
   xmlHttp = new XMLHttpRequest();
   var url = "https://maps.googleapis.com/maps/api/directions/json?key=AIzaSyBvbZUMkNxFl5lvHp7U8763z8WsWtmD1Kw&origin="+start+"&destination="+end+"&mode="+travmode+"&sensor=false";
@@ -94,11 +97,21 @@ function getDurationInSecs(start, end) { //,success_callback) {
       console.log(result) ;
       seconds = JSON.parse(xmlHttp.responseText)['routes'][0]['legs'][0]['duration']['value'] ;
       console.log(seconds) ;
-      sendMessage();
+      sendMessage(init);
     }
   };
 
 } ;
 
 
+Pebble.addEventListener("appmessage",
+  function(e) {
+    request_info(false);
+  }
+);
 
+Pebble.addEventListener("ready",
+  function(e) {
+    console.log("JavaScript app ready and running!");
+  }
+);
